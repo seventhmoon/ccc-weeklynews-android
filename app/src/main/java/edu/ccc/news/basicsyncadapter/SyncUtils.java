@@ -33,11 +33,11 @@ import edu.ccc.news.common.accounts.GenericAccountService;
  * Static helper methods for working with the sync framework.
  */
 public class SyncUtils {
-    private static final long SYNC_FREQUENCY = 60 * 60;  // 1 hour (in seconds)
-    private static final String CONTENT_AUTHORITY = FeedContract.CONTENT_AUTHORITY;
-    private static final String PREF_SETUP_COMPLETE = "setup_complete";
     // Value below must match the account type specified in res/xml/syncadapter.xml
     public static final String ACCOUNT_TYPE = "com.example.android.basicsyncadapter.account";
+    private static final long SYNC_FREQUENCY = 60 * 60 * 24;  // daily in sec
+    private static final String CONTENT_AUTHORITY = FeedContract.CONTENT_AUTHORITY;
+    private static final String PREF_SETUP_COMPLETE = "setup_complete";
 
     /**
      * Create an entry for this application in the system account list, if it isn't already there.
@@ -62,7 +62,7 @@ public class SyncUtils {
             // Recommend a schedule for automatic synchronization. The system may modify this based
             // on other scheduled syncs and network utilization.
             ContentResolver.addPeriodicSync(
-                    account, CONTENT_AUTHORITY, new Bundle(),SYNC_FREQUENCY);
+                    account, CONTENT_AUTHORITY, new Bundle(), SYNC_FREQUENCY);
             newAccount = true;
         }
 
@@ -78,10 +78,10 @@ public class SyncUtils {
 
     /**
      * Helper method to trigger an immediate sync ("refresh").
-     *
+     * <p/>
      * <p>This should only be used when we need to preempt the normal sync schedule. Typically, this
      * means the user has pressed the "refresh" button.
-     *
+     * <p/>
      * Note that SYNC_EXTRAS_MANUAL will cause an immediate sync, without any optimization to
      * preserve battery life. If you know new data is available (perhaps via a GCM notification),
      * but the user is not actively waiting for that data, you should omit this flag; this will give

@@ -26,11 +26,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
@@ -47,24 +47,24 @@ import edu.ccc.news.common.accounts.GenericAccountService;
 
 /**
  * List fragment containing a list of Atom entry objects (articles) stored in the local database.
- *
+ * <p/>
  * <p>Database access is mediated by a content provider, specified in
  * {@link edu.ccc.news.basicsyncadapter.provider.FeedProvider}. This content
  * provider is
  * automatically populated by  {@link SyncService}.
- *
+ * <p/>
  * <p>Selecting an item from the displayed list displays the article in the default browser.
- *
+ * <p/>
  * <p>If the content provider doesn't return any data, then the first sync hasn't run yet. This sync
  * adapter assumes data exists in the provider once a sync has run. If your app doesn't work like
  * this, you should add a flag that notes if a sync has run, so you can differentiate between "no
  * available data" and "no initial sync", and display this in the UI.
- *
+ * <p/>
  * <p>The ActionBar displays a "Refresh" button. When the user clicks "Refresh", the sync adapter
  * runs immediately. An indeterminate ProgressBar element is displayed, showing that the sync is
  * occurring.
  */
-public class EntryListFragment extends ListFragment
+public class EntryListFragment extends SwipeRefreshListFragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = "EntryListFragment";
@@ -116,7 +116,7 @@ public class EntryListFragment extends ListFragment
     /**
      * Handle to a SyncObserver. The ProgressBar element is visible until the SyncObserver reports
      * that the sync is complete.
-     *
+     * <p/>
      * <p>This allows us to delete our SyncObserver once the application is no longer in the
      * foreground.
      */
@@ -200,6 +200,7 @@ public class EntryListFragment extends ListFragment
 
         mAdapter = new SimpleCursorAdapter(
                 getActivity(),       // Current context
+//                R.layout.enrty,
                 android.R.layout.simple_list_item_activated_2,  // Layout for individual rows
                 null,                // Cursor
                 FROM_COLUMNS,        // Cursor columns to use
@@ -224,6 +225,15 @@ public class EntryListFragment extends ListFragment
         setListAdapter(mAdapter);
         setEmptyText(getText(R.string.loading));
         getLoaderManager().initLoader(0, null, this);
+
+        setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+//                Log.i(LOG_TAG, "onRefresh called from SwipeRefreshLayout");
+
+                initiateRefresh();
+            }
+        });
     }
 
     @Override
@@ -248,7 +258,7 @@ public class EntryListFragment extends ListFragment
 
     /**
      * Query the content provider for data.
-     *
+     * <p/>
      * <p>Loaders do queries in a background thread. They also provide a ContentObserver that is
      * triggered when data in the content provider changes. When the sync adapter updates the
      * content provider, the ContentObserver responds by resetting the loader and then reloading
@@ -292,8 +302,8 @@ public class EntryListFragment extends ListFragment
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        mOptionsMenu = menu;
-        inflater.inflate(R.menu.main, menu);
+//        mOptionsMenu = menu;
+//        inflater.inflate(R.menu.main, menu);
     }
 
     /**
@@ -336,6 +346,26 @@ public class EntryListFragment extends ListFragment
         Intent i = new Intent(Intent.ACTION_VIEW, articleURL);
         startActivity(i);
     }
+
+    // BEGIN_INCLUDE (initiate_refresh)
+
+    /**
+     * By abstracting the refresh process to a single method, the app allows both the
+     * SwipeGestureLayout onRefresh() method and the Refresh action item to refresh the content.
+     */
+    private void initiateRefresh() {
+//        Log.i(LOG_TAG, "initiateRefresh");
+        SyncUtils.TriggerRefresh();
+        setRefreshing(false);
+
+        /**
+         * Execute the background task, which uses {@link android.os.AsyncTask} to load the data.
+         */
+//        new DummyBackgroundTask().execute();
+
+    }
+    // END_INCLUDE (initiate_refresh)
+
 
     /**
      * Set the state of the Refresh button. If a sync is active, turn on the ProgressBar widget.
