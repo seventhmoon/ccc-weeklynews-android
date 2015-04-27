@@ -8,7 +8,7 @@ import edu.ccc.news.R;
 /**
  * Activity for holding EntryListFragment.
  */
-public class EntryListActivity extends ActionBarActivity {
+public class EntryListActivity extends AppCompactActivity {
 //    private SwipeRefreshLayout laySwipe;
 //    private SwipeRefreshLayout.OnRefreshListener onSwipeToRefresh = new SwipeRefreshLayout.OnRefreshListener() {
 //        @Override
